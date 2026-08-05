@@ -28,6 +28,7 @@ module.exports = NodeHelper.create({
 
         try {
 
+            console.log("API URL:", config.apiUrl);
             const response = await axios.get(
                 config.apiUrl
             );
