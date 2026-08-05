@@ -107,21 +107,6 @@ module.exports = NodeHelper.create({
 
 
             /*
-             * Remove past classes
-             */
-
-            if (config.hidePastClasses !== false) {
-
-                const now = new Date();
-
-                classes = classes.filter(item =>
-                    item.timestamp >= now
-                );
-
-            }
-
-
-            /*
              * Sort chronologically
              */
 
