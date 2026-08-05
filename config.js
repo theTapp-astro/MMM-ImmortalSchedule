@@ -14,8 +14,6 @@
 
         // Leave empty to show ALL classes
         favoriteClasses: [
-            "Muay Thai Kickboxing",
-            "Muay Thai Sparring & Clinic",
         ],
 
         // Hide classes that have already started
