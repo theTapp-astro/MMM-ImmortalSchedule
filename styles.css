@@ -1,0 +1,65 @@
+/*
+ * MMM-ImmortalSchedule
+ * Styles
+ */
+
+.immortal-schedule {
+    width: 320px;
+    text-align: left;
+}
+
+
+.immortal-date {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+
+.immortal-class {
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+
+.immortal-class .bright {
+    display: inline-block;
+    min-width: 75px;
+}
+
+
+.immortal-class .medium {
+    font-size: 22px;
+}
+
+
+.immortal-class .small {
+    font-size: 18px;
+}
+
+
+.immortal-class .xsmall {
+    font-size: 14px;
+}
+
+
+.immortal-class div {
+    margin-left: 78px;
+    margin-top: 2px;
+}
+
+
+.immortal-schedule .dimmed {
+    opacity: 0.65;
+}
+
+
+.immortal-schedule .bright {
+    color: #fff;
+}
+
+
+.immortal-schedule .normal {
+    color: #ddd;
+}
