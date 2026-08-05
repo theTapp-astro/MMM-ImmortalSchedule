@@ -9,15 +9,9 @@
         // Refresh every 5 minutes
         updateInterval: 86400000, //Once per day
 
-        // Number of days of classes to request/display
-        daysAhead: 7,
-
         // Leave empty to show ALL classes
         favoriteClasses: [
         ],
-
-        // Hide classes that have already started
-        hidePastClasses: true,
 
         // Display options
         showDate: true,
