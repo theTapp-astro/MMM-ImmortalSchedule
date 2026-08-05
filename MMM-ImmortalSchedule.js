@@ -13,8 +13,6 @@ Module.register("MMM-ImmortalSchedule", {
 
         favoriteClasses: [],
 
-        hidePastClasses: true,
-
         showDate: true,
         showDay: true,
         showTime: true,
