@@ -1,0 +1,25 @@
+{
+  "name": "mmm-immortal-schedule",
+  "version": "1.0.0",
+  "description": "MagicMirror module for displaying Immortal Martial Arts class schedules from MyStudio",
+  "main": "MMM-ImmortalSchedule.js",
+  "scripts": {
+    "test": "echo \"No tests configured\""
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "magicmirror",
+    "magicmirror2",
+    "schedule",
+    "mystudio",
+    "martial-arts"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9"
+  }
+}
