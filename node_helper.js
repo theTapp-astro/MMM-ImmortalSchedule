@@ -95,14 +95,6 @@ module.exports = NodeHelper.create({
                     end_time:
                         item.end_time,
 
-                    location:
-                        item.class_appointment_location,
-
-                    capacity:
-                        item.capacity_flag === "Y"
-                            ? `${item.actual_registered_count} / ${item.capacity_value}`
-                            : "",
-
                     timestamp:
                         this.parseDateTime(
                             item.class_appointment_date,
