@@ -122,31 +122,43 @@ module.exports = NodeHelper.create({
 
             let classes = [];
 
+responses.forEach(response => {
+
+    if (
+        response.data &&
+        Array.isArray(response.data.msg)
+    ) {
+
+        let found = 0;
 
 
-            responses.forEach(response => {
+        response.data.msg.forEach(day => {
+
+            if (
+                Array.isArray(day.class_schedule_details)
+            ) {
+
+                classes.push(
+                    ...day.class_schedule_details
+                );
+
+                found += day.class_schedule_details.length;
+
+            }
+
+        });
 
 
-                if (
-                    response.data &&
-                    Array.isArray(response.data.msg)
-                ) {
+        console.log(
+            "Extracted",
+            found,
+            "classes"
+        );
 
+    }
 
-                    console.log(
-                        "Received",
-                        response.data.msg.length,
-                        "classes"
-                    );
+});
 
-
-                    classes.push(
-                        ...response.data.msg
-                    );
-
-                }
-
-            });
 
 
 
