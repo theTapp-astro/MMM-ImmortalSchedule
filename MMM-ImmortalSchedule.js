@@ -77,34 +77,74 @@ Module.register("MMM-ImmortalSchedule", {
 
         }
 
-        this.schedule.forEach(item => {
+        const grouped = {};
 
-            const row = document.createElement("div");
-            row.className = "immortal-row";
+this.schedule.forEach(item => {
 
-            row.textContent =
-                `${this.formatDate(item.timestamp)}: ${item.title} at ${item.startTime}`;
+    const date = this.formatDate(item.timestamp);
 
-            wrapper.appendChild(row);
+    const key =
+        `${date}|${item.title}`;
 
-        });
+    if (!grouped[key]) {
+
+        grouped[key] = {
+            date: date,
+            title: item.title,
+            times: []
+        };
+
+    }
+
+    grouped[key].times.push(
+        item.startTime
+    );
+
+});
+
+
+Object.values(grouped).forEach(item => {
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "immortal-row";
+
+
+    row.textContent =
+        `${item.date}: ${item.title} -> ${item.times.join(" or ")}`;
+
+
+    wrapper.appendChild(row);
+
+});
 
         return wrapper;
 
     },
 
-    formatDate(timestamp) {
+formatDate(timestamp) {
 
-        return new Date(timestamp).toLocaleDateString(
+    const date = new Date(timestamp);
+
+    const weekday =
+        date.toLocaleDateString(
             "en-US",
             {
-                weekday: "long",
-                month: "numeric",
-                day: "numeric",
-                year: "2-digit"
+                weekday: "long"
             }
         );
 
-    }
+    const month =
+        date.getMonth() + 1;
+
+    const day =
+        date.getDate();
+
+
+    return `${weekday} (${month}/${day})`;
+
+}
 
 });
