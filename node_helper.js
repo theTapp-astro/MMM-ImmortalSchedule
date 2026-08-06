@@ -7,164 +7,273 @@ module.exports = NodeHelper.create({
         console.log("MMM-ImmortalSchedule helper started");
     },
 
-    socketNotificationReceived(notification, payload) {
+
+    socketNotificationReceived(notification, config) {
 
         if (notification === "GET_SCHEDULE") {
-            this.getSchedule(payload);
+
+            this.getSchedule(config);
+
         }
 
     },
+
 
     async getSchedule(config) {
 
         try {
 
-            const today = this.getTodayString();
+            const today =
+                this.getTodayString();
 
-            const requests = config.sources.map(source => {
 
-                const params = new URLSearchParams({
-                    appointment_for: source.appointmentFor || "I",
-                    appointmentdate: today,
-                    automation_recaptcha_enabled: "Y",
-                    cancel_rescheduler_flag: "false",
-                    class_appointment_id: source.classAppointmentId,
-                    class_scheduler_verion: "2",
-                    companyid: config.companyId,
-                    current_date: today,
-                    end: "100",
-                    first_entry: "true",
-                    individual_type: "N",
-                    limit: "7",
-                    mem_billing_days: "",
-                    mem_end_date: "",
-                    mem_start_date: "",
-                    mobile_flag: "N",
-                    reg_type_user: "U",
-                    staff_id: "",
-                    start: "0",
-                    student_token: "",
-                    studentid: "0",
-                    token: "",
-                    user_login_type: "",
-                    waitlist_display: "Y"
+            const requests =
+                config.sources.map(source => {
+
+
+                    const params =
+                        new URLSearchParams({
+
+                            appointment_for:
+                                source.appointmentFor || "I",
+
+                            appointmentdate:
+                                today,
+
+                            automation_recaptcha_enabled:
+                                "Y",
+
+                            cancel_rescheduler_flag:
+                                "false",
+
+                            class_appointment_id:
+                                source.classAppointmentId,
+
+                            class_scheduler_verion:
+                                "2",
+
+                            companyid:
+                                config.companyId,
+
+                            current_date:
+                                today,
+
+                            end:
+                                "100",
+
+                            first_entry:
+                                "true",
+
+                            individual_type:
+                                "N",
+
+                            limit:
+                                "100",
+
+                            mobile_flag:
+                                "N",
+
+                            reg_type_user:
+                                "U",
+
+                            start:
+                                "0",
+
+                            studentid:
+                                "0",
+
+                            token:
+                                "",
+
+                            user_login_type:
+                                "",
+
+                            waitlist_display:
+                                "Y"
+
+                        });
+
+
+                    const url =
+                        "https://cp.mystudio.io/Api/v2/getClassAppointmentDetails?" +
+                        params.toString();
+
+
+                    console.log(
+                        "Fetching schedule:",
+                        url
+                    );
+
+
+                    return axios.get(url);
+
+
                 });
 
-                const url =
-                    "https://cp.mystudio.io/Api/v2/getClassAppointmentDetails?" +
-                    params.toString();
 
-                console.log("Fetching:", url);
+            const responses =
+                await Promise.all(requests);
 
-                return axios.get(url);
-
-            });
-
-            const responses = await Promise.all(requests);
 
             let classes = [];
+
 
             responses.forEach(response => {
 
                 if (
                     response.data &&
-                    response.data.status === "Success" &&
                     Array.isArray(response.data.msg)
                 ) {
 
-                    classes.push(...response.data.msg);
+                    classes.push(
+                        ...response.data.msg
+                    );
 
                 }
 
             });
 
-            //
-            // Remove duplicates
-            //
 
-            const unique = new Map();
 
-            classes.forEach(c => {
-                unique.set(c.class_appointment_occurrence_id, c);
-            });
+            /*
+             * Remove duplicate classes
+             */
 
-            classes = [...unique.values()];
+            const unique =
+                new Map();
 
-            //
-            // Convert objects
-            //
 
-            classes = classes.map(c => {
+            classes.forEach(item => {
 
-                const timestamp = this.parseDateTime(
-                    c.class_appointment_date,
-                    c.start_time
+                unique.set(
+                    item.class_appointment_occurrence_id,
+                    item
                 );
 
-                return {
-
-                    title: c.class_appointment_title,
-
-                    start_time: c.start_time,
-
-                    end_time: c.end_time,
-
-                    location: c.class_appointment_location,
-
-                    capacity:
-                        c.capacity_flag === "Y"
-                            ? `${c.actual_registered_count} / ${c.capacity_value}`
-                            : "",
-
-                    timestamp,
-
-                    displayDate: this.formatDate(timestamp)
-
-                };
-
             });
 
-            //
-            // Hide past classes
-            //
 
-            if (config.hidePastClasses) {
+            classes =
+                Array.from(unique.values());
 
-                const now = new Date();
 
-                classes = classes.filter(c => c.timestamp >= now);
+
+            /*
+             * Convert API format
+             */
+
+            classes =
+                classes.map(item => {
+
+
+                    const timestamp =
+                        this.parseDateTime(
+                            item.class_appointment_date,
+                            item.start_time
+                        );
+
+
+                    return {
+
+                        title:
+                            item.class_appointment_title,
+
+
+                        start_time:
+                            item.start_time,
+
+
+                        end_time:
+                            item.end_time,
+
+
+                        location:
+                            item.class_appointment_location,
+
+
+                        capacity:
+                            item.capacity_flag === "Y"
+                                ? `${item.actual_registered_count} / ${item.capacity_value}`
+                                : "",
+
+
+                        timestamp:
+                            timestamp.getTime()
+
+                    };
+
+
+                });
+
+
+
+            /*
+             * Remove old classes
+             */
+
+            if (
+                config.hidePastClasses !== false
+            ) {
+
+                const now =
+                    new Date().getTime();
+
+
+                classes =
+                    classes.filter(item =>
+                        item.timestamp >= now
+                    );
 
             }
 
-            //
-            // Sort
-            //
 
-            classes.sort((a, b) => a.timestamp - b.timestamp);
 
-            //
-            // Limit
-            //
+            /*
+             * Sort by date/time
+             */
+
+            classes.sort(
+                (a, b) =>
+                    a.timestamp - b.timestamp
+            );
+
+
+
+            /*
+             * Limit display
+             */
 
             if (config.maxClasses) {
 
-                classes = classes.slice(0, config.maxClasses);
+                classes =
+                    classes.slice(
+                        0,
+                        config.maxClasses
+                    );
 
             }
 
+
+
             console.log(
-                `Sending ${classes.length} classes to frontend`
+                `Sending ${classes.length} classes`
             );
+
 
             this.sendSocketNotification(
                 "SCHEDULE_RESULT",
                 classes
             );
 
-        }
-        catch (err) {
 
-            console.error(err);
+        }
+        catch(error) {
+
+            console.error(
+                "MMM-ImmortalSchedule error:",
+                error.message
+            );
+
 
             this.sendSocketNotification(
                 "SCHEDULE_RESULT",
@@ -175,61 +284,88 @@ module.exports = NodeHelper.create({
 
     },
 
+
+
     getTodayString() {
 
-        const d = new Date();
+        const now =
+            new Date();
 
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
 
-        return `${year}-${month}-${day}`;
-
-    },
-
-    parseDateTime(date, time) {
-
-        const [year, month, day] = date.split("-").map(Number);
-
-        let [clock, ampm] = time.split(" ");
-
-        let [hour, minute] = clock.split(":").map(Number);
-
-        if (ampm === "PM" && hour !== 12) hour += 12;
-        if (ampm === "AM" && hour === 12) hour = 0;
-
-        return new Date(
-            year,
-            month - 1,
-            day,
-            hour,
-            minute,
-            0
+        return (
+            now.getFullYear() +
+            "-" +
+            String(
+                now.getMonth() + 1
+            ).padStart(2, "0") +
+            "-" +
+            String(
+                now.getDate()
+            ).padStart(2, "0")
         );
 
     },
 
-    formatDate(date) {
 
-        const today = new Date();
-        const tomorrow = new Date();
 
-        tomorrow.setDate(today.getDate() + 1);
+    parseDateTime(date, time) {
 
-        if (date.toDateString() === today.toDateString()) {
-            return "TODAY";
+
+        const parts =
+            date.split("-");
+
+
+        const dateParts =
+            parts.map(Number);
+
+
+        const timeMatch =
+            time.match(
+                /(\d+):(\d+)\s*(AM|PM)/
+            );
+
+
+        let hour =
+            Number(timeMatch[1]);
+
+
+        const minute =
+            Number(timeMatch[2]);
+
+
+        const ampm =
+            timeMatch[3];
+
+
+        if (
+            ampm === "PM" &&
+            hour !== 12
+        ) {
+
+            hour += 12;
+
         }
 
-        if (date.toDateString() === tomorrow.toDateString()) {
-            return "TOMORROW";
+
+        if (
+            ampm === "AM" &&
+            hour === 12
+        ) {
+
+            hour = 0;
+
         }
 
-        return date.toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "short",
-            day: "numeric"
-        });
+
+        return new Date(
+            dateParts[0],
+            dateParts[1] - 1,
+            dateParts[2],
+            hour,
+            minute
+        );
 
     }
+
 
 });
