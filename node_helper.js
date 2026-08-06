@@ -310,62 +310,67 @@ module.exports = NodeHelper.create({
 
     parseDateTime(date, time) {
 
+    if (!date || !time) {
 
-        const parts =
-            date.split("-");
-
-
-        const dateParts =
-            parts.map(Number);
-
-
-        const timeMatch =
-            time.match(
-                /(\d+):(\d+)\s*(AM|PM)/
-            );
-
-
-        let hour =
-            Number(timeMatch[1]);
-
-
-        const minute =
-            Number(timeMatch[2]);
-
-
-        const ampm =
-            timeMatch[3];
-
-
-        if (
-            ampm === "PM" &&
-            hour !== 12
-        ) {
-
-            hour += 12;
-
-        }
-
-
-        if (
-            ampm === "AM" &&
-            hour === 12
-        ) {
-
-            hour = 0;
-
-        }
-
-
-        return new Date(
-            dateParts[0],
-            dateParts[1] - 1,
-            dateParts[2],
-            hour,
-            minute
+        console.log(
+            "Missing date/time:",
+            {
+                date: date,
+                time: time
+            }
         );
+
+        return null;
 
     }
 
+
+    const parts = date.split("-");
+
+    const year = Number(parts[0]);
+    const month = Number(parts[1]);
+    const day = Number(parts[2]);
+
+
+    const timeMatch = time.match(
+        /(\d+):(\d+)\s*(AM|PM)/
+    );
+
+
+    if (!timeMatch) {
+
+        console.log(
+            "Unable to parse time:",
+            time
+        );
+
+        return null;
+
+    }
+
+
+    let hour = Number(timeMatch[1]);
+    const minute = Number(timeMatch[2]);
+    const ampm = timeMatch[3];
+
+
+    if (ampm === "PM" && hour !== 12) {
+        hour += 12;
+    }
+
+    if (ampm === "AM" && hour === 12) {
+        hour = 0;
+    }
+
+
+    return new Date(
+        year,
+        month - 1,
+        day,
+        hour,
+        minute
+    );
+
+}
 
 });
