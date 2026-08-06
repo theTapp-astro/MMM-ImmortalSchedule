@@ -4,14 +4,18 @@ const axios = require("axios");
 module.exports = NodeHelper.create({
 
     start() {
-        console.log("MMM-ImmortalSchedule helper started");
+        console.log(
+            "MMM-ImmortalSchedule helper started"
+        );
     },
 
 
     socketNotificationReceived(notification, config) {
 
         if (notification === "GET_SCHEDULE") {
+
             this.getSchedule(config);
+
         }
 
     },
@@ -21,31 +25,75 @@ module.exports = NodeHelper.create({
 
         try {
 
-            const today = this.getTodayString();
+            const today = this.getToday();
+
+
+            console.log(
+                "Loading Immortal schedule for",
+                today
+            );
+
 
             const requests = config.sources.map(source => {
 
+
                 const params = new URLSearchParams({
 
-                    appointment_for: source.appointmentFor || "I",
-                    appointmentdate: today,
-                    automation_recaptcha_enabled: "Y",
-                    cancel_rescheduler_flag: "false",
-                    class_appointment_id: source.classAppointmentId,
-                    class_scheduler_verion: "2",
-                    companyid: config.companyId,
-                    current_date: today,
-                    end: "100",
-                    first_entry: "true",
-                    individual_type: "N",
-                    limit: "100",
-                    mobile_flag: "N",
-                    reg_type_user: "U",
-                    start: "0",
-                    studentid: "0",
-                    token: "",
-                    user_login_type: "",
-                    waitlist_display: "Y"
+                    appointment_for: "I",
+
+                    appointmentdate:
+                        today,
+
+                    current_date:
+                        today,
+
+                    class_appointment_id:
+                        source.classAppointmentId,
+
+                    class_scheduler_verion:
+                        "2",
+
+                    companyid:
+                        config.companyId,
+
+                    automation_recaptcha_enabled:
+                        "Y",
+
+                    cancel_rescheduler_flag:
+                        "false",
+
+                    end:
+                        "100",
+
+                    first_entry:
+                        "true",
+
+                    individual_type:
+                        "N",
+
+                    limit:
+                        "100",
+
+                    mobile_flag:
+                        "N",
+
+                    reg_type_user:
+                        "U",
+
+                    start:
+                        "0",
+
+                    studentid:
+                        "0",
+
+                    token:
+                        "",
+
+                    user_login_type:
+                        "",
+
+                    waitlist_display:
+                        "Y"
 
                 });
 
@@ -55,7 +103,10 @@ module.exports = NodeHelper.create({
                     params.toString();
 
 
-                console.log("Fetching:", url);
+                console.log(
+                    "Requesting class:",
+                    source.classAppointmentId
+                );
 
 
                 return axios.get(url);
@@ -63,134 +114,133 @@ module.exports = NodeHelper.create({
             });
 
 
-            const responses = await Promise.all(requests);
+
+            const responses =
+                await Promise.all(requests);
+
 
 
             let classes = [];
 
 
-responses.forEach(response => {
 
-    if (
-        response.data &&
-        Array.isArray(response.data.msg)
-    ) {
-
-        console.log(
-            "Received",
-            response.data.msg.length,
-            "classes"
-        );
-
-        classes.push(
-            ...response.data.msg
-        );
-
-    }
-
-});
+            responses.forEach(response => {
 
 
-            // Remove duplicate occurrences
+                if (
+                    response.data &&
+                    Array.isArray(response.data.msg)
+                ) {
 
-            const unique = new Map();
+
+                    console.log(
+                        "Received",
+                        response.data.msg.length,
+                        "classes"
+                    );
+
+
+                    classes.push(
+                        ...response.data.msg
+                    );
+
+                }
+
+            });
+
+
+
+            /*
+             * Remove duplicate occurrences
+             */
+
+            const unique =
+                new Map();
+
 
             classes.forEach(item => {
 
-                if (item.class_appointment_occurrence_id) {
-
-                    unique.set(
-                        item.class_appointment_occurrence_id,
-                        item
-                    );
-
-                }
+                unique.set(
+                    item.class_appointment_occurrence_id,
+                    item
+                );
 
             });
 
 
-            classes = Array.from(unique.values());
+            classes =
+                Array.from(unique.values());
 
 
 
-            // Convert API response
+            /*
+             * Convert to display objects
+             */
 
-            classes = classes.map(item => {
-
-
-                const timestamp =
-                    this.parseDateTime(
-                        item.class_appointment_date,
-                        item.start_time
-                    );
+            classes =
+                classes.map(item => {
 
 
-                if (!timestamp) {
-
-                    console.log(
-                        "Skipping invalid class:",
-                        item.class_appointment_title
-                    );
-
-                    return null;
-
-                }
+                    const timestamp =
+                        this.parseDateTime(
+                            item.class_appointment_date,
+                            item.start_time
+                        );
 
 
-                return {
+                    if (!timestamp) {
 
-                    title:
-                        item.class_appointment_title || "Class",
+                        return null;
 
-                    start_time:
-                        item.start_time || "",
+                    }
 
-                    end_time:
-                        item.end_time || "",
 
-                    location:
-                        item.class_appointment_location || "",
+                    return {
 
-                    capacity:
-                        item.capacity_flag === "Y"
-                            ? `${item.actual_registered_count}/${item.capacity_value}`
-                            : "",
+                        title:
+                            item.class_appointment_title,
 
-                    timestamp:
-                        timestamp.getTime()
+                        startTime:
+                            item.start_time,
 
-                };
+                        location:
+                            item.class_appointment_location,
 
-            });
+                        timestamp:
+                            timestamp.getTime()
+
+                    };
+
+
+                });
 
 
 
-            // Remove invalid entries
-
-            classes = classes.filter(
-                item => item !== null
-            );
-
-
-        /*
-            // Remove past classes --CURRENTLY  REMOVED
-
-            if (config.hidePastClasses !== false) {
-
-                const now =
-                    new Date().getTime();
+            classes =
+                classes.filter(
+                    item => item !== null
+                );
 
 
-                classes =
-                    classes.filter(item =>
-                        item.timestamp >= now
-                    );
 
-            }
-            */
+            /*
+             * Remove past classes
+             */
+
+            const now =
+                new Date().getTime();
 
 
-            // Sort chronologically
+            classes =
+                classes.filter(item =>
+                    item.timestamp >= now
+                );
+
+
+
+            /*
+             * Sort by date/time
+             */
 
             classes.sort(
                 (a, b) =>
@@ -199,7 +249,9 @@ responses.forEach(response => {
 
 
 
-            // Limit results
+            /*
+             * Limit display
+             */
 
             if (config.maxClasses) {
 
@@ -229,9 +281,10 @@ responses.forEach(response => {
         }
         catch(error) {
 
+
             console.error(
-                "MMM-ImmortalSchedule:",
-                error
+                "MMM-ImmortalSchedule error:",
+                error.message
             );
 
 
@@ -246,17 +299,22 @@ responses.forEach(response => {
 
 
 
-    getTodayString() {
+    getToday() {
 
-        const date = new Date();
+        const now =
+            new Date();
 
 
         return (
-            date.getFullYear() +
+            now.getFullYear() +
             "-" +
-            String(date.getMonth() + 1).padStart(2, "0") +
+            String(
+                now.getMonth() + 1
+            ).padStart(2, "0") +
             "-" +
-            String(date.getDate()).padStart(2, "0")
+            String(
+                now.getDate()
+            ).padStart(2, "0")
         );
 
     },
@@ -268,12 +326,6 @@ responses.forEach(response => {
 
         if (!date || !time) {
 
-            console.log(
-                "Missing date/time",
-                date,
-                time
-            );
-
             return null;
 
         }
@@ -283,30 +335,16 @@ responses.forEach(response => {
             date.split("-");
 
 
-        if (dateParts.length !== 3) {
-
-            console.log(
-                "Bad date format:",
-                date
-            );
-
-            return null;
-
-        }
-
-
         const timeMatch =
             time.match(
                 /(\d+):(\d+)\s*(AM|PM)/
             );
 
 
-        if (!timeMatch) {
-
-            console.log(
-                "Bad time format:",
-                time
-            );
+        if (
+            dateParts.length !== 3 ||
+            !timeMatch
+        ) {
 
             return null;
 
@@ -314,11 +352,15 @@ responses.forEach(response => {
 
 
         let hour =
-            Number(timeMatch[1]);
+            Number(
+                timeMatch[1]
+            );
 
 
         const minute =
-            Number(timeMatch[2]);
+            Number(
+                timeMatch[2]
+            );
 
 
         const ampm =
