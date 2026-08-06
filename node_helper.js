@@ -71,27 +71,16 @@ module.exports = NodeHelper.create({
 
 responses.forEach(response => {
 
-    console.log(
-        "API status:",
-        response.data.status
-    );
-
-    console.log(
-        "API message count:",
-        response.data.msg ? response.data.msg.length : "missing"
-    );
-
-
     if (
         response.data &&
         Array.isArray(response.data.msg)
     ) {
 
         console.log(
-            "First record:",
-            JSON.stringify(response.data.msg[0], null, 2)
+            "Received",
+            response.data.msg.length,
+            "classes"
         );
-
 
         classes.push(
             ...response.data.msg
