@@ -166,14 +166,19 @@ module.exports = NodeHelper.create({
                 classes.map(item => {
 
 
-                    const timestamp =
-                        this.parseDateTime(
-                            item.class_appointment_date,
-                            item.start_time
-                        );
+        const timestamp =
+            this.parseDateTime(
+                item.class_appointment_date,
+                item.start_time
+            );
 
 
-                    return {
+        if (!timestamp) {
+            return null;
+        }
+
+
+        return {
 
                         title:
                             item.class_appointment_title,
@@ -374,3 +379,5 @@ module.exports = NodeHelper.create({
 }
 
 });
+
+classes = classes.filter(item => item !== null);
