@@ -172,8 +172,8 @@ responses.forEach(response => {
             );
 
 
-
-            // Remove past classes
+        /*
+            // Remove past classes --CURRENTLY  REMOVED
 
             if (config.hidePastClasses !== false) {
 
@@ -187,7 +187,7 @@ responses.forEach(response => {
                     );
 
             }
-
+            */
 
 
             // Sort chronologically
