@@ -5,31 +5,21 @@
  */
 
 Module.register("MMM-ImmortalSchedule", {
-
     defaults: {
-
         updateInterval: 5 * 60 * 1000,
-
         hidePastClasses: true,
-
         showHeader: true,
-
         maxClasses: 20
-
     },
 
 
     start: function () {
-
         Log.info(
             "Starting " + this.name
         );
 
         this.schedule = [];
-
         this.loaded = false;
-
-
         this.sendSocketNotification(
             "GET_SCHEDULE",
             this.config
@@ -81,7 +71,6 @@ Module.register("MMM-ImmortalSchedule", {
 
         const wrapper =
             document.createElement("div");
-
 
         wrapper.className =
             "immortal-schedule";
@@ -160,19 +149,20 @@ Module.register("MMM-ImmortalSchedule", {
     },
 
 
-    formatDisplayDate: function (date) {
+    formatDisplayDate: function (timestamp) {
 
+        const date = new Date(timestamp);
         return date.toLocaleDateString(
-            "en-US",
-            {
-                weekday: "long",
-                month: "numeric",
-                day: "numeric",
-                year: "2-digit"
-            }
-        );
+        "en-US",
+        {
+            weekday: "long",
+            month: "numeric",
+            day: "numeric",
+            year: "2-digit"
+        }
+    );
 
-    }
+}
 
 
 });
