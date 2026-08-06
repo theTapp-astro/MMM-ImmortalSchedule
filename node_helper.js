@@ -69,28 +69,37 @@ module.exports = NodeHelper.create({
             let classes = [];
 
 
-            responses.forEach(response => {
+responses.forEach(response => {
 
-                if (
-                    response.data &&
-                    Array.isArray(response.data.msg)
-                ) {
+    console.log(
+        "API status:",
+        response.data.status
+    );
 
-                    console.log(
-                        "Received",
-                        response.data.msg.length,
-                        "classes"
-                    );
+    console.log(
+        "API message count:",
+        response.data.msg ? response.data.msg.length : "missing"
+    );
 
 
-                    classes.push(
-                        ...response.data.msg
-                    );
+    if (
+        response.data &&
+        Array.isArray(response.data.msg)
+    ) {
 
-                }
+        console.log(
+            "First record:",
+            JSON.stringify(response.data.msg[0], null, 2)
+        );
 
-            });
 
+        classes.push(
+            ...response.data.msg
+        );
+
+    }
+
+});
 
 
             // Remove duplicate occurrences
