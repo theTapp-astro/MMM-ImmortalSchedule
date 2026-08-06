@@ -1,55 +1,64 @@
 /* MagicMirror²
  * Module: MMM-ImmortalSchedule
+ *
+ * Displays Immortal Martial Arts schedule
  */
 
 Module.register("MMM-ImmortalSchedule", {
 
     defaults: {
-        companyId: 7491,
 
-        sources: [],
-
-        updateInterval: 86400000, //24 hours
+        updateInterval: 5 * 60 * 1000,
 
         hidePastClasses: true,
 
         showHeader: true,
-        showDate: true,
-        showTime: true,
-        showLocation: true,
-        showCapacity: false,
 
         maxClasses: 20
+
     },
+
 
     start: function () {
 
-        Log.info("Starting " + this.name);
+        Log.info(
+            "Starting " + this.name
+        );
 
         this.schedule = [];
+
         this.loaded = false;
 
-        this.getSchedule();
-
-        setInterval(() => {
-            this.getSchedule();
-        }, this.config.updateInterval);
-    },
-
-    getSchedule: function () {
 
         this.sendSocketNotification(
             "GET_SCHEDULE",
             this.config
         );
 
+
+        setInterval(() => {
+
+            this.sendSocketNotification(
+                "GET_SCHEDULE",
+                this.config
+            );
+
+        }, this.config.updateInterval);
+
     },
 
-    socketNotificationReceived: function (notification, payload) {
 
-        if (notification === "SCHEDULE_RESULT") {
+    socketNotificationReceived: function (
+        notification,
+        payload
+    ) {
+
+        if (
+            notification === "SCHEDULE_RESULT"
+        ) {
 
             this.schedule = payload;
+
             this.loaded = true;
 
             this.updateDom(500);
@@ -58,100 +67,112 @@ Module.register("MMM-ImmortalSchedule", {
 
     },
 
+
     getStyles: function () {
-        return ["styles.css"];
+
+        return [
+            "styles.css"
+        ];
+
     },
+
 
     getDom: function () {
 
-        const wrapper = document.createElement("div");
+        const wrapper =
+            document.createElement("div");
 
-        wrapper.className = "immortal-schedule";
+
+        wrapper.className =
+            "immortal-schedule";
+
 
         if (!this.loaded) {
 
-            wrapper.innerHTML = "Loading class schedule...";
+            wrapper.innerHTML =
+                "Loading class schedule...";
+
             return wrapper;
 
         }
 
-        if (!this.schedule.length) {
 
-            wrapper.innerHTML = "No upcoming classes";
+        if (
+            !this.schedule ||
+            this.schedule.length === 0
+        ) {
+
+            wrapper.innerHTML =
+                "No upcoming classes";
+
             return wrapper;
 
         }
+
 
         if (this.config.showHeader) {
 
-            const header = document.createElement("header");
-            header.innerHTML = "🥋 Immortal Martial Arts";
+            const header =
+                document.createElement("div");
+
+
+            header.className =
+                "immortal-header";
+
+
+            header.innerHTML =
+                "🥋 Immortal Martial Arts";
+
+
             wrapper.appendChild(header);
 
         }
 
-        let lastDate = "";
 
         this.schedule
-            .slice(0, this.config.maxClasses)
+            .slice(
+                0,
+                this.config.maxClasses
+            )
             .forEach(item => {
 
-                if (
-                    this.config.showDate &&
-                    item.displayDate !== lastDate
-                ) {
 
-                    lastDate = item.displayDate;
+                const line =
+                    document.createElement("div");
 
-                    const dateHeader = document.createElement("div");
-                    dateHeader.className = "immortal-date";
-                    dateHeader.innerHTML = item.displayDate;
 
-                    wrapper.appendChild(dateHeader);
+                line.className =
+                    "immortal-line";
 
-                }
 
-                const row = document.createElement("div");
-                row.className = "immortal-class";
+                line.innerHTML =
+                    `${this.formatDisplayDate(item.timestamp)}: ${item.title} at ${item.start_time}`;
 
-                const time = document.createElement("div");
-                time.className = "bright small";
-                time.innerHTML = item.start_time;
 
-                row.appendChild(time);
+                wrapper.appendChild(line);
 
-                const title = document.createElement("div");
-                title.className = "medium";
-                title.innerHTML = item.title;
-
-                row.appendChild(title);
-
-                if (this.config.showLocation && item.location) {
-
-                    const location = document.createElement("div");
-                    location.className = "dimmed xsmall";
-                    location.innerHTML = "📍 " + item.location;
-
-                    row.appendChild(location);
-
-                }
-
-                if (this.config.showCapacity && item.capacity) {
-
-                    const capacity = document.createElement("div");
-                    capacity.className = "dimmed xsmall";
-                    capacity.innerHTML = "👥 " + item.capacity;
-
-                    row.appendChild(capacity);
-
-                }
-
-                wrapper.appendChild(row);
 
             });
 
+
         return wrapper;
 
+    },
+
+
+    formatDisplayDate: function (date) {
+
+        return date.toLocaleDateString(
+            "en-US",
+            {
+                weekday: "long",
+                month: "numeric",
+                day: "numeric",
+                year: "2-digit"
+            }
+        );
+
     }
+
 
 });
