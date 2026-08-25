@@ -7,12 +7,18 @@
 Module.register("MMM-ImmortalSchedule", {
 
     defaults: {
-
         updateInterval: 5 * 60 * 1000,
 
         maxClasses: 20,
 
-        showHeader: true
+        showHeader: true,
+
+        // "full" = normal multi-day schedule
+        // "today" = today's schedule only
+        viewMode: "full",
+
+        // Header/title used by today's view
+        todayTitle: "Today's Immortal Schedule"
 
     },
 
@@ -34,7 +40,6 @@ Module.register("MMM-ImmortalSchedule", {
             this.getSchedule();
 
         }, this.config.updateInterval);
-
     },
 
 
@@ -89,7 +94,6 @@ Module.register("MMM-ImmortalSchedule", {
                 "Loading class schedule...";
 
             return wrapper;
-
         }
 
 
@@ -99,10 +103,22 @@ Module.register("MMM-ImmortalSchedule", {
                 "No upcoming classes";
 
             return wrapper;
+        }
+
+
+        /*
+         * Today's compact view
+         */
+        if (this.config.viewMode === "today") {
+
+            return this.getTodayView(wrapper);
 
         }
 
 
+        /*
+         * Normal full schedule view
+         */
         if (this.config.showHeader) {
 
             const header =
@@ -114,7 +130,7 @@ Module.register("MMM-ImmortalSchedule", {
 
 
             header.innerHTML =
-                "🥋 Immortal Martial Arts";
+                "<u>Immortal Martial Arts</u> Schedule";
 
 
             wrapper.appendChild(header);
@@ -126,7 +142,6 @@ Module.register("MMM-ImmortalSchedule", {
          * Group classes by date + class name
          * Combine multiple times into one line
          */
-
         const grouped = {};
 
 
@@ -166,7 +181,6 @@ Module.register("MMM-ImmortalSchedule", {
         });
 
 
-
         Object.values(grouped)
             .slice(0, this.config.maxClasses)
             .forEach(item => {
@@ -186,6 +200,129 @@ Module.register("MMM-ImmortalSchedule", {
 
                 wrapper.appendChild(row);
 
+            });
+
+
+        return wrapper;
+
+    },
+
+
+    /*
+     * Compact view showing only today's classes.
+     *
+     * Example:
+     *
+     * Today's Immortal Schedule: MT Kickboxing -> 6:00 PM
+     */
+    getTodayView(wrapper) {
+
+        const today =
+            new Date();
+
+
+        const todayYear =
+            today.getFullYear();
+
+        const todayMonth =
+            today.getMonth();
+
+        const todayDay =
+            today.getDate();
+
+
+        const todayClasses =
+            this.schedule.filter(item => {
+
+                const date =
+                    new Date(item.timestamp);
+
+
+                return (
+                    date.getFullYear() === todayYear &&
+                    date.getMonth() === todayMonth &&
+                    date.getDate() === todayDay
+                );
+
+            });
+
+
+        const title =
+            document.createElement("div");
+
+
+        title.className =
+            "immortal-today-header";
+
+
+        title.textContent =
+            this.config.todayTitle;
+
+
+        wrapper.appendChild(title);
+
+
+        if (todayClasses.length === 0) {
+
+            const empty =
+                document.createElement("div");
+
+
+            empty.className =
+                "immortal-today-empty";
+
+
+            empty.textContent =
+                "No classes today";
+
+
+            wrapper.appendChild(empty);
+
+            return wrapper;
+
+        }
+
+
+        /*
+         * Group today's classes by class name.
+         */
+        const grouped = {};
+
+
+        todayClasses.forEach(item => {
+
+            const title =
+                this.formatTitle(item.title);
+
+
+            if (!grouped[title]) {
+
+                grouped[title] = [];
+
+            }
+
+
+            grouped[title].push(item.startTime);
+
+        });
+
+
+        Object.entries(grouped)
+            .forEach(([title, times]) => {
+
+                const row =
+                    document.createElement("div");
+
+
+                row.className =
+                    "immortal-today-row";
+
+
+                row.textContent =
+                    `${title} -> ${times.join(" or ")}`;
+
+
+                wrapper.appendChild(row);
 
             });
 
@@ -231,6 +368,5 @@ Module.register("MMM-ImmortalSchedule", {
         return `${weekday} (${month}/${day})`;
 
     }
-
 
 });
