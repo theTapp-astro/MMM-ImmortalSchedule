@@ -215,121 +215,98 @@ Module.register("MMM-ImmortalSchedule", {
      *
      * Today's Immortal Schedule: MT Kickboxing -> 6:00 PM
      */
-    getTodayView(wrapper) {
-
-        const today =
-            new Date();
-
-
-        const todayYear =
-            today.getFullYear();
-
-        const todayMonth =
-            today.getMonth();
-
-        const todayDay =
-            today.getDate();
-
-
-        const todayClasses =
-            this.schedule.filter(item => {
-
-                const date =
-                    new Date(item.timestamp);
-
-
-                return (
-                    date.getFullYear() === todayYear &&
-                    date.getMonth() === todayMonth &&
-                    date.getDate() === todayDay
-                );
-
-            });
-
-
-        const title =
-            document.createElement("div");
-
-
-        title.className =
-            "immortal-today-header";
-
-
-       title.textContent =
-            "🥊 " + this.config.todayTitle;
-
-        wrapper.appendChild(title);
-
-
-        if (todayClasses.length === 0) {
-
-            const empty =
-                document.createElement("div");
-
-
-            empty.className =
-                "immortal-today-empty";
-
-
-            empty.textContent =
-                "No classes today";
-
-
-            wrapper.appendChild(empty);
-
-            return wrapper;
-
-        }
-
-
+        getTodayView(wrapper) {
+    
+        const today = new Date();
+    
+        const todayYear = today.getFullYear();
+        const todayMonth = today.getMonth();
+        const todayDay = today.getDate();
+    
+        const todayClasses = this.schedule.filter(item => {
+    
+            const date = new Date(item.timestamp);
+    
+            return (
+                date.getFullYear() === todayYear &&
+                date.getMonth() === todayMonth &&
+                date.getDate() === todayDay
+            );
+    
+        });
+    
+    
         /*
          * Group today's classes by class name.
          */
         const grouped = {};
-
-
+    
         todayClasses.forEach(item => {
-
-            const title =
-                this.formatTitle(item.title);
-
-
+    
+            const title = this.formatTitle(item.title);
+    
             if (!grouped[title]) {
-
                 grouped[title] = [];
-
             }
-
-
+    
             grouped[title].push(item.startTime);
-
+    
         });
-
-
-        Object.entries(grouped)
-            .forEach(([title, times]) => {
-
-                const row =
-                    document.createElement("div");
-
-
-                row.className =
-                    "immortal-today-row";
-
-
+    
+    
+        const entries = Object.entries(grouped);
+    
+    
+        /*
+         * No classes today
+         */
+        if (entries.length === 0) {
+    
+            const row = document.createElement("div");
+    
+            row.className = "immortal-today-row";
+    
+            row.textContent =
+                "🥊 " + this.config.todayTitle + ": No classes today";
+    
+            wrapper.appendChild(row);
+    
+            return wrapper;
+    
+        }
+    
+    
+        /*
+         * Put the title and first class on the same line.
+         */
+        entries.forEach(([title, times], index) => {
+    
+            const row = document.createElement("div");
+    
+            row.className = "immortal-today-row";
+    
+            const timeText = times.join(" or ");
+    
+            if (index === 0) {
+    
                 row.textContent =
-                    `${title} -> ${times.join(" or ")}`;
-
-
-                wrapper.appendChild(row);
-
-            });
-
-
+                    `🥊 ${this.config.todayTitle}: ${title} -> ${timeText}`;
+    
+            } else {
+    
+                row.textContent =
+                    `${title} -> ${timeText}`;
+    
+            }
+    
+            wrapper.appendChild(row);
+    
+        });
+    
+    
         return wrapper;
-
+    
     },
-
 
     formatTitle(title) {
 
