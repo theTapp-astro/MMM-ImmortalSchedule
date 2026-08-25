@@ -130,7 +130,7 @@ Module.register("MMM-ImmortalSchedule", {
 
 
             header.innerHTML =
-                "<u>Immortal Martial Arts</u> Schedule";
+                "🥊 <u>Immortal Martial Arts Schedule</u>";
 
 
             wrapper.appendChild(header);
