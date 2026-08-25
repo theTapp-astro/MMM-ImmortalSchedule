@@ -255,9 +255,8 @@ Module.register("MMM-ImmortalSchedule", {
             "immortal-today-header";
 
 
-        title.textContent =
-            this.config.todayTitle;
-
+       title.textContent =
+            "🥊 " + this.config.todayTitle;
 
         wrapper.appendChild(title);
 
